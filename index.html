@@ -6,145 +6,140 @@
     <title>Pair Match Game</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
-            text-align: center;
-            padding: 20px;
+            font-family: Arial, sans-serif;
             margin: 0;
-            color: #333;
-        }
-        h1 {
-            color: #42a5f5;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        .container {
+            padding: 0;
+            background-color: #f0f0f0;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin-bottom: 20px;
-            gap: 20px;
-            transition: opacity 0.5s ease;
+            height: 100vh;
+            flex-direction: column;
         }
+
+        #game-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .lists {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            width: 90%;
+            max-width: 800px;
+        }
+
         .list {
             list-style-type: none;
             padding: 0;
-            width: 90%;
-            max-width: 350px; /* Adjusted for better layout on smaller screens */
-        }
-        .item {
-            margin: 10px;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 12px;
+            margin: 0;
+            width: 45%;
             background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            max-height: 350px;
+            padding: 10px;
+        }
+
+        .item {
+            padding: 10px;
+            margin: 5px;
+            background-color: #e0e0e0;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
-            width: 100%;
-            text-align: left;
-            font-size: 1em;
-            word-wrap: break-word;
-            max-width: 300px;
-            overflow-wrap: break-word; /* Ensures long sentences break properly */
-            white-space: normal;
+            border-radius: 5px;
+            transition: background-color 0.3s;
         }
-        .item:hover {
-            background-color: #efefef;
-            transform: scale(1.05);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+
         .item.selected {
-            background-color: #ffec3d;
-            box-shadow: 0 4px 8px rgba(255, 204, 0, 0.5);
+            background-color: #d2e3ff;
         }
+
         .correct {
-            background-color: #81c784;
+            background-color: #4caf50 !important;
             color: white;
-            box-shadow: 0 4px 8px rgba(129, 199, 132, 0.6);
         }
+
         .incorrect {
-            background-color: #e57373;
+            background-color: #f44336 !important;
             color: white;
-            box-shadow: 0 4px 8px rgba(229, 115, 115, 0.6);
         }
-        .score {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
+
         #feedback {
-            margin: 20px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #3c3c3c;
-        }
-        #playAgainButton {
-            padding: 12px 25px;
+            margin-top: 20px;
             font-size: 18px;
-            background-color: #42a5f5;
+            font-weight: bold;
+        }
+
+        #score-container {
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        #attempts {
+            margin-top: 10px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4caf50;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
             display: none;
-            margin-top: 20px;
-            transition: background-color 0.3s;
-            width: 80%; /* Ensures the button doesn't get too wide on small screens */
         }
-        #playAgainButton:hover {
-            background-color: #1e88e5;
+
+        button:hover {
+            background-color: #45a049;
         }
-        #playAgainButton:active {
-            transform: scale(0.98);
-        }
+
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2em;
-            }
-            .container {
+            .lists {
                 flex-direction: column;
-                align-items: center;
             }
-            .item {
-                font-size: 0.9em; /* Slightly smaller text on mobile */
-                padding: 10px;
-            }
-            .score, #feedback {
-                font-size: 16px; /* Adjust text size for smaller screens */
+
+            .list {
+                width: 100%;
+                margin-bottom: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <h1>Pair Match Game</h1>
-    <div class="score">
-        <span>Score: <span id="score">0</span>/5</span>
-    </div>
-    <div class="container">
-        <div>
-            <h3>Words</h3>
-            <ul id="wordsList" class="list"></ul>
-        </div>
-        <div>
-            <h3>Definitions</h3>
-            <ul id="defsList" class="list"></ul>
-        </div>
-    </div>
-    <div id="feedback"></div>
-    <button id="playAgainButton">Play Again</button>
 
+    <div id="game-container">
+        <div class="lists">
+            <ul id="words-list" class="list"></ul>
+            <ul id="defs-list" class="list"></ul>
+        </div>
+
+        <div id="score-container">
+            <p id="feedback"></p>
+            <p id="score">Score: 0</p>
+            <p id="attempts">Attempts: 0</p>
+        </div>
+
+        <button id="play-again-button">Play Again</button>
+    </div>
     <script>
-        const wordsList = document.getElementById('wordsList');
-        const defsList = document.getElementById('defsList');
+        const wordsList = document.getElementById('words-list');
+        const defsList = document.getElementById('defs-list');
         const feedback = document.getElementById('feedback');
         const scoreDisplay = document.getElementById('score');
-        const playAgainButton = document.getElementById('playAgainButton');
+        const attemptsDisplay = document.getElementById('attempts');
+        const playAgainButton = document.getElementById('play-again-button');
+    
         let selectedWord = null;
         let score = 0;
         let attempts = 0;
         let matchedPairs = 0;
-
+    
         const words = [
     { id: 1, text: 'ESP', definition: 'English for Specific Purposes, a tailored approach to learning English for specific needs.' },
     { id: 2, text: 'EOP', definition: 'English for Occupational Purposes, focused on language skills for specific occupations.' },
@@ -248,128 +243,137 @@
     { id: 100, text: 'Sociolinguistics', definition: 'The study of how language varies and changes in different social contexts.' }
 ];
 
-
-        // Sound effects
-        const correctSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
-        const incorrectSound = new Audio('https://www.soundjay.com/button/beep-08b.wav');
-
-        // Shuffle function to randomize word and definition order
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
+    // Shuffle function to randomize word and definition order
+     // Shuffle function to randomize word and definition order
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
         }
+    }
 
-        // Function to create the lists from words
-        function createLists() {
-            // Shuffle the words and definitions list
-            const shuffledWords = [...words];
-            const shuffledDefinitions = [...words];
+    // Function to get 4 random word-definition pairs
+    function getRandomWordPairs(arr, num) {
+        const shuffled = [...arr];
+        shuffle(shuffled); // Shuffle the array
+        return shuffled.slice(0, num); // Return the first 'num' pairs
+    }
 
-            shuffle(shuffledWords); // Shuffle words
-            shuffle(shuffledDefinitions); // Shuffle definitions
+    function createLists() {
+    // اختر 4 كلمات مع تعريفاتها
+    const selectedPairs = getRandomWordPairs(words, 4);
 
-            // Select only the first 5 items from shuffled list
-            const selectedWords = shuffledWords.slice(0, 5);
-            const selectedDefinitions = shuffledDefinitions.slice(0, 5);
+    // نأخذ الكلمات والتعريفات بشكل منفصل
+    const selectedWords = selectedPairs.map(pair => pair.text);
+    const selectedDefinitions = selectedPairs.map(pair => pair.definition);
 
-            wordsList.innerHTML = '';
-            defsList.innerHTML = '';
+    // نخلط الكلمات والتعريفات
+    shuffle(selectedWords);
+    shuffle(selectedDefinitions);
 
-            selectedWords.forEach(word => {
-                const wordItem = document.createElement('li');
-                wordItem.classList.add('item');
-                wordItem.dataset.id = word.id;
-                wordItem.textContent = word.text;
-                wordItem.dataset.matched = 'false'; // Mark as unmatched initially
-                wordsList.appendChild(wordItem);
-            });
+    // ابدأ بإنشاء القوائم
+    wordsList.innerHTML = '';
+    defsList.innerHTML = '';
 
-            selectedDefinitions.forEach(word => {
-                const defItem = document.createElement('li');
-                defItem.classList.add('item');
-                defItem.dataset.id = word.id;
-                defItem.textContent = word.definition;
-                defItem.dataset.matched = 'false'; // Mark as unmatched initially
-                defsList.appendChild(defItem);
-            });
-        }
+    selectedWords.forEach(word => {
+        const wordItem = document.createElement('li');
+        wordItem.classList.add('item');
+        wordItem.dataset.word = word;  // حفظ الكلمة كبيانات للمقارنة لاحقاً
+        wordItem.textContent = word;
+        wordItem.dataset.matched = 'false';
+        wordsList.appendChild(wordItem);
+    });
 
-        // Function to handle word-definition matching
-        function matchWordDefinition(word, definition) {
-            attempts++;
-            if (word.dataset.id === definition.dataset.id && word.dataset.matched === 'false' && definition.dataset.matched === 'false') {
-                word.classList.add('correct');
-                definition.classList.add('correct');
-                correctSound.play();
-                word.dataset.matched = 'true'; // Mark word as matched
-                definition.dataset.matched = 'true'; // Mark definition as matched
-                score++;
-                matchedPairs++;
+    selectedDefinitions.forEach(definition => {
+        const defItem = document.createElement('li');
+        defItem.classList.add('item');
+        defItem.textContent = definition;
+        defItem.dataset.matched = 'false';
+        defsList.appendChild(defItem);
+    });
 
-                feedback.textContent = 'Correct! Keep going!';
-                scoreDisplay.textContent = score;
-            } else {
-                word.classList.add('incorrect');
-                definition.classList.add('incorrect');
-                incorrectSound.play();
-                feedback.textContent = 'Incorrect! Try again!';
-                setTimeout(() => {
-                    word.classList.remove('incorrect');
-                    definition.classList.remove('incorrect');
-                }, 500);
-            }
+    score = 0;
+    attempts = 0;
+    matchedPairs = 0;
+    scoreDisplay.textContent = `Score: ${score}`;
+    attemptsDisplay.textContent = `Attempts: ${attempts}`;
+    feedback.textContent = '';
+    playAgainButton.style.display = 'none'; // إخفاء زر إعادة اللعب
+}
 
-            // Check if all pairs are matched
-            if (matchedPairs === 5) {
-                feedback.textContent = 'Congratulations! You have matched all pairs!';
-                playAgainButton.style.display = 'inline-block'; // Show Play Again button
-            }
+// وظيفة لمطابقة الكلمات مع التعريفات
+function matchWordDefinition(word, definition) {
+    const wordText = word.textContent;
+    const defText = definition.textContent;
 
-            // Check if attempts exceed limit
-            if (attempts >= 6) {
-                feedback.textContent = 'Game Over! Too many incorrect attempts.';
-                playAgainButton.style.display = 'inline-block'; // Show Play Again button
-            }
+    // نبحث عن المطابقة الصحيحة بين الكلمة والتعريف
+    const selectedPair = words.find(pair => pair.text === wordText && pair.definition === defText);
 
-            selectedWord = null;
-        }
+    if (selectedPair) {
+        word.classList.add('correct');
+        definition.classList.add('correct');
+        word.dataset.matched = 'true';
+        definition.dataset.matched = 'true';
+        score++;
+        matchedPairs++;
 
-        // Event listener for word selection
-        wordsList.addEventListener('click', function(event) {
-            if (event.target.classList.contains('item') && !event.target.classList.contains('correct') && !event.target.classList.contains('incorrect')) {
-                if (selectedWord) {
-                    matchWordDefinition(selectedWord, event.target);
-                } else {
-                    selectedWord = event.target;
-                    selectedWord.classList.add('selected');
-                }
-            }
-        });
+        feedback.textContent = 'Correct! Keep going!';
+        scoreDisplay.textContent = `Score: ${score}`;
+    } else {
+        attempts++;
+        attemptsDisplay.textContent = `Attempts: ${attempts}`;
+        word.classList.add('incorrect');
+        definition.classList.add('incorrect');
+        feedback.textContent = 'Incorrect! Try again!';
+        setTimeout(() => {
+            word.classList.remove('incorrect');
+            definition.classList.remove('incorrect');
+        }, 500);
+    }
 
-        // Event listener for definition selection
-        defsList.addEventListener('click', function(event) {
-            if (event.target.classList.contains('item') && !event.target.classList.contains('correct') && !event.target.classList.contains('incorrect') && selectedWord) {
+    // تحقق من تطابق جميع الأزواج
+    if (matchedPairs === 4) {
+        feedback.textContent = 'Congratulations! You have matched all pairs!';
+        playAgainButton.style.display = 'inline-block'; // إظهار زر إعادة اللعب
+    }
+
+    // تحقق من تجاوز عدد المحاولات
+    if (attempts >= 6) {
+        feedback.textContent = 'Game Over! Too many incorrect attempts.';
+        playAgainButton.style.display = 'inline-block'; // إظهار زر إعادة اللعب
+    }
+
+    selectedWord = null;
+}
+
+    // Event listener for word selection
+    wordsList.addEventListener('click', function(event) {
+        if (event.target.classList.contains('item') && !event.target.classList.contains('correct') && !event.target.classList.contains('incorrect')) {
+            if (selectedWord) {
                 matchWordDefinition(selectedWord, event.target);
+            } else {
+                selectedWord = event.target;
+                selectedWord.classList.add('selected');
             }
-        });
+        }
+    });
 
-        // "Play Again" button event listener
-        playAgainButton.addEventListener('click', function() {
-            // Reset game state
-            score = 0;
-            attempts = 0;
-            matchedPairs = 0;
-            scoreDisplay.textContent = score;
-            feedback.textContent = '';
-            playAgainButton.style.display = 'none';
+    // Event listener for definition selection
+    defsList.addEventListener('click', function(event) {
+        if (event.target.classList.contains('item') && !event.target.classList.contains('correct') && !event.target.classList.contains('incorrect') && selectedWord) {
+            matchWordDefinition(selectedWord, event.target);
+        }
+    });
 
-            createLists(); // Rebuild word and definition lists
-        });
+    // "Play Again" button event listener
+    playAgainButton.addEventListener('click', function() {
+        createLists(); // Rebuild word and definition lists
+    });
 
-        // Start the game
-        createLists();
-    </script>
+    // Initialize the game
+    createLists();
+    
+</script>
+
 </body>
 </html>
