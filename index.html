@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pair Match Game</title>
+    <style>
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+#game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 90%;
+    max-width: 700px;
+}
+
+.lists {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.list {
+    list-style-type: none;
+    padding: 10px;
+    margin: 0;
+    width: 48%;
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.item {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #e6e6e6;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.item:hover {
+    background-color: #ccc;
+}
+
+.item.selected {
+    background-color: #b3d9ff;
+}
+
+.correct {
+    background-color: #4caf50;
+    color: white;
+}
+
+.incorrect {
+    background-color: #f44336;
+    color: white;
+}
+
+#feedback {
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+#score-container {
+    font-size: 16px;
+    margin-top: 15px;
+}
+
+#attempts {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #f44336;
+}
+
+button {
+    margin-top: 25px;
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    display: none;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+@media (max-width: 768px) {
+    .lists {
+        flex-direction: column;
+    }
+
+    .list {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h2>ESP pairs match game </h2>
+        <div class="lists">
+            <ul id="words-list" class="list"></ul>
+            <ul id="defs-list" class="list"></ul>
+        </div>
+
+        <div id="score-container">
+            <p id="feedback"></p>
+            <p id="score">Score: 0</p>
+            <p id="attempts">Attempts: 0</p>
+        </div>
+
+        <button id="play-again-button">Play Again</button>
+    </div>
+    <script>
+        const wordsList = document.getElementById('words-list');
+        const defsList = document.getElementById('defs-list');
+        const feedback = document.getElementById('feedback');
+        const scoreDisplay = document.getElementById('score');
+        const attemptsDisplay = document.getElementById('attempts');
+        const playAgainButton = document.getElementById('play-again-button');
+    
+        let selectedWord = null;
+        let score = 0;
+        let attempts = 0;
+        let matchedPairs = 0;
+    
+        const words = [
+    { id: 1, text: 'ESP', definition: 'English for Specific Purposes, a tailored approach to learning English for specific needs.' },
+    { id: 2, text: 'EOP', definition: 'English for Occupational Purposes, focused on language skills for specific occupations.' },
+    { id: 3, text: 'EAP', definition: 'English for Academic Purposes, focused on language skills for academic contexts.' },
+    { id: 4, text: 'Linguistics', definition: 'The scientific study of language and its structure.' },
+    { id: 5, text: 'Vocabulary', definition: 'The set of words known and used by a person or group.' },
+    { id: 6, text: 'Modals', definition: 'Auxiliary verbs that express possibility, necessity, or permission.' },
+    { id: 7, text: 'Passive Voice', definition: 'A sentence structure where the subject is acted upon, often used in scientific writing.' },
+    { id: 8, text: 'Semi-technical Vocabulary', definition: 'Words that are specific to a field but not highly specialized.' },
+    { id: 9, text: 'Carrier Content', definition: 'The context or subject matter used in a lesson to facilitate language learning.' },
+    { id: 10, text: 'Real Content', definition: 'The actual language skills or vocabulary taught in an ESP course.' },
+    { id: 11, text: 'General English', definition: 'A broad approach to learning English for general use, not tailored to any specific field.' },
+    { id: 12, text: 'Specific Needs', definition: 'The particular language skills required for a specific purpose or profession.' },
+    { id: 13, text: 'Tenses', definition: 'Grammatical structures that indicate the time of an action or event.' },
+    { id: 14, text: 'Present Simple', definition: 'A tense used to describe general facts, habits, or routines.' },
+    { id: 15, text: 'Present Perfect', definition: 'A tense that connects past actions to the present, often without specifying a time.' },
+    { id: 16, text: 'Past Simple', definition: 'A tense used to describe completed actions in the past.' },
+    { id: 17, text: 'Grammar', definition: 'The rules and structures used to form sentences and communicate effectively in a language.' },
+    { id: 18, text: 'Nominalization', definition: 'The process of converting verbs into nouns to create formal, concise expressions.' },
+    { id: 19, text: 'Passive Voice', definition: 'A grammatical structure where the focus is on the action or the recipient of the action.' },
+    { id: 20, text: 'Active Voice', definition: 'A grammatical structure where the subject performs the action in the sentence.' },
+    { id: 21, text: 'Modality', definition: 'The way in which a speaker expresses necessity, possibility, or ability through verbs.' },
+    { id: 22, text: 'Articles', definition: 'Words like "a," "an," and "the," used to define nouns in specific or general contexts.' },
+    { id: 23, text: 'Word Formation', definition: 'The process of creating new words through prefixes, suffixes, and other modifications.' },
+    { id: 24, text: 'Jargon', definition: 'Specialized language used by professionals in a particular field, often difficult for outsiders to understand.' },
+    { id: 25, text: 'EAP Focus', definition: 'Emphasis on developing academic skills like reading, writing, and critical thinking.' },
+    { id: 26, text: 'Language Skills', definition: 'The ability to use language effectively for speaking, listening, reading, and writing.' },
+    { id: 27, text: 'Content Knowledge', definition: 'The specific subject matter expertise required for a given field or profession.' },
+    { id: 28, text: 'Needs Analysis', definition: 'The process of identifying the language needs of a learner or group.' },
+    { id: 29, text: 'Learning Materials', definition: 'Resources like textbooks, exercises, and online content used to teach language.' },
+    { id: 30, text: 'Methodology', definition: 'The approach or techniques used to teach language in an ESP context.' },
+    { id: 31, text: 'Course Design', definition: 'The process of creating a structured learning experience based on learner needs.' },
+    { id: 32, text: 'Professional English', definition: 'English used in a specific career field, focusing on relevant vocabulary and communication.' },
+    { id: 33, text: 'Vocational English', definition: 'English skills necessary for performing practical tasks in specific professions or trades.' },
+    { id: 34, text: 'Academic English', definition: 'English used in academic settings, including reading, writing, and discussing complex topics.' },
+    { id: 35, text: 'English for Medical Purposes', definition: 'Language used in medical fields, including terminology and communication with patients.' },
+    { id: 36, text: 'English for Business Purposes', definition: 'Language focused on business communication, including meetings, presentations, and email writing.' },
+    { id: 37, text: 'Aviation English', definition: 'English language skills required for safe and effective communication in aviation.' },
+    { id: 38, text: 'Technical English', definition: 'English used to explain technical subjects or describe complex processes.' },
+    { id: 39, text: 'Subject Specialists', definition: 'Experts in a particular field who help shape ESP courses by providing content knowledge.' },
+    { id: 40, text: 'Collaborative Teaching', definition: 'An approach where language teachers and subject experts work together to design lessons.' },
+    { id: 41, text: 'Feedback', definition: 'Information given to learners about their performance to guide improvements.' },
+    { id: 42, text: 'Learner-Centered', definition: 'An approach where the learner’s needs and goals drive the teaching process.' },
+    { id: 43, text: 'ESP Practitioner', definition: 'An expert in teaching English for Specific Purposes, often involved in course design and research.' },
+    { id: 44, text: 'Syllabus Design', definition: 'The process of selecting and organizing content for a course.' },
+    { id: 45, text: 'Grammar in Context', definition: 'Teaching grammar in relation to the specific language needs of learners.' },
+    { id: 46, text: 'Academic Writing', definition: 'Writing that follows formal conventions used in scholarly and research contexts.' },
+    { id: 47, text: 'Technical Writing', definition: 'Writing that explains specialized concepts in fields like engineering, science, and medicine.' },
+    { id: 48, text: 'Professional Communication', definition: 'Communication skills necessary for effective interactions in a professional setting.' },
+    { id: 49, text: 'Oral Presentation', definition: 'Speaking skills needed to deliver information clearly and persuasively to an audience.' },
+    { id: 50, text: 'Reading Comprehension', definition: 'The ability to understand and interpret written texts.' },
+    { id: 51, text: 'Listening Skills', definition: 'The ability to understand spoken language, crucial in both professional and academic settings.' },
+    { id: 52, text: 'Translation', definition: 'The process of converting text from one language to another while preserving meaning.' },
+    { id: 53, text: 'Language for Special Purposes', definition: 'A broader category encompassing any language variety used in a specific context or profession.' },
+    { id: 54, text: 'Educational Goals', definition: 'Specific objectives or outcomes that an educational course aims to achieve.' },
+    { id: 55, text: 'Task-Based Learning', definition: 'An approach where learners engage in tasks that reflect real-world language use.' },
+    { id: 56, text: 'Authentic Materials', definition: 'Real-world resources, like newspapers or technical manuals, used in language teaching.' },
+    { id: 57, text: 'Competency-Based Learning', definition: 'An approach where learning is measured by the ability to perform specific tasks or skills.' },
+    { id: 58, text: 'Language Proficiency', definition: 'The level of ability a learner has in speaking, reading, writing, and listening in a language.' },
+    { id: 59, text: 'Specialized Vocabulary', definition: 'Vocabulary that is specific to a particular field, such as medicine, law, or technology.' },
+    { id: 60, text: 'Real-Life Contexts', definition: 'Situations and tasks that learners will encounter outside of the classroom.' },
+    { id: 61, text: 'Needs Assessment', definition: 'A process to determine the specific language needs of learners in a particular field.' },
+    { id: 62, text: 'Language Register', definition: 'The level of formality or informality in language use, depending on the context.' },
+    { id: 63, text: 'Cultural Sensitivity', definition: 'The awareness and understanding of cultural differences when communicating in English.' },
+    { id: 64, text: 'Functional English', definition: 'English used for practical communication in everyday situations, including work and social interactions.' },
+    { id: 65, text: 'Job-Related English', definition: 'English tailored to the vocabulary and communication needs of specific jobs or professions.' },
+    { id: 66, text: 'Language of Instruction', definition: 'The language used in teaching, which in ESP is often tailored to the subject matter.' },
+    { id: 67, text: 'Critical Thinking', definition: 'The ability to analyze and evaluate information or arguments in a thoughtful and logical way.' },
+    { id: 68, text: 'Curriculum', definition: 'The planned and organized course content, including objectives, materials, and assessments.' },
+    { id: 69, text: 'Skill Development', definition: 'The process of improving a learner’s ability in specific language skills, such as reading, writing, or speaking.' },
+    { id: 70, text: 'Authentic Assessment', definition: 'Evaluations that focus on real-world tasks and how well learners can perform them in context.' },
+    { id: 71, text: 'Fluency', definition: 'The ability to speak or write smoothly and with ease.' },
+    { id: 72, text: 'Accuracy', definition: 'The degree to which language use conforms to the rules of grammar and vocabulary.' },
+    { id: 73, text: 'Learning Outcomes', definition: 'The skills or knowledge that learners are expected to achieve by the end of a course.' },
+    { id: 74, text: 'Lexical Approach', definition: 'A teaching methodology that emphasizes vocabulary and the use of words in context over grammar.' },
+    { id: 75, text: 'Blended Learning', definition: 'A teaching approach that combines online and in-person learning.' },
+    { id: 76, text: 'English for Science', definition: 'Language skills necessary for scientific communication, including technical writing and academic reading.' },
+    { id: 77, text: 'Professional Development', definition: 'The ongoing process of improving skills and knowledge in a particular professional field.' },
+    { id: 78, text: 'Interdisciplinary Learning', definition: 'Combining knowledge from different disciplines to enhance learning.' },
+    { id: 79, text: 'Language Fluency', definition: 'The ability to use language comfortably and efficiently in real-world situations.' },
+    { id: 80, text: 'Knowledge Transfer', definition: 'The process of applying knowledge from one area to another.' },
+    { id: 81, text: 'Pragmatics', definition: 'The study of how context influences language use.' },
+    { id: 82, text: 'Language Pedagogy', definition: 'The method and practice of teaching language.' },
+    { id: 83, text: 'Contextualized Learning', definition: 'Learning that takes place in a setting that mirrors real-life situations.' },
+    { id: 84, text: 'English for Engineering', definition: 'Language skills required for effective communication in engineering contexts.' },
+    { id: 85, text: 'Task-Based Assessment', definition: 'Assessing learners based on their ability to complete practical language tasks.' },
+    { id: 86, text: 'Teaching Strategies', definition: 'Approaches and techniques used by educators to facilitate learning.' },
+    { id: 87, text: 'Learning Outcomes Assessment', definition: 'Measuring how well learners achieve the goals of a course.' },
+    { id: 88, text: 'Writing for Business', definition: 'English writing skills necessary for professional correspondence and documentation.' },
+    { id: 89, text: 'English for Social Work', definition: 'Language needed for communication in the social work profession, including interacting with clients.' },
+    { id: 90, text: 'Critical Reading', definition: 'The ability to analyze texts, identifying arguments, evidence, and underlying assumptions.' },
+    { id: 91, text: 'Research Skills', definition: 'The abilities needed to conduct academic or professional research, such as reading, analyzing, and writing.' },
+    { id: 92, text: 'English for Law', definition: 'Legal language used in law-related contexts, including contracts, agreements, and court proceedings.' },
+    { id: 93, text: 'Digital Literacy', definition: 'The ability to use digital tools and resources for learning and communication.' },
+    { id: 94, text: 'Interpersonal Communication', definition: 'The exchange of information between individuals through verbal and non-verbal means.' },
+    { id: 95, text: 'Cultural Awareness', definition: 'The understanding of cultural differences and how they impact communication.' },
+    { id: 96, text: 'English for Technology', definition: 'Language skills needed for effective communication in the tech industry.' },
+    { id: 97, text: 'Presentation Skills', definition: 'The ability to effectively deliver information to an audience through speaking and visual aids.' },
+    { id: 98, text: 'Collaboration', definition: 'Working together with others to achieve a common goal, often in a learning or professional context.' },
+    { id: 99, text: 'Multimedia Learning', definition: 'Using multimedia tools, like videos and interactive software, to enhance learning.' },
+    { id: 100, text: 'Sociolinguistics', definition: 'The study of how language varies and changes in different social contexts.' }
+];
+
+    // Shuffle function to randomize word and definition order
+     // Shuffle function to randomize word and definition order
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // Function to get 4 random word-definition pairs
+    function getRandomWordPairs(arr, num) {
+        const shuffled = [...arr];
+        shuffle(shuffled); // Shuffle the array
+        return shuffled.slice(0, num); // Return the first 'num' pairs
+    }
+
+    function createLists() {
+    // اختر 4 كلمات مع تعريفاتها
+    const selectedPairs = getRandomWordPairs(words, 4);
+
+    // نأخذ الكلمات والتعريفات بشكل منفصل
+    const selectedWords = selectedPairs.map(pair => pair.text);
+    const selectedDefinitions = selectedPairs.map(pair => pair.definition);
+
+    // نخلط الكلمات والتعريفات
+    shuffle(selectedWords);
+    shuffle(selectedDefinitions);
+
+    // ابدأ بإنشاء القوائم
+    wordsList.innerHTML = '';
+    defsList.innerHTML = '';
+
+    selectedWords.forEach(word => {
+        const wordItem = document.createElement('li');
+        wordItem.classList.add('item');
+        wordItem.dataset.word = word;  // حفظ الكلمة كبيانات للمقارنة لاحقاً
+        wordItem.textContent = word;
+        wordItem.dataset.matched = 'false';
+        wordsList.appendChild(wordItem);
+    });
+
+    selectedDefinitions.forEach(definition => {
+        const defItem = document.createElement('li');
+        defItem.classList.add('item');
+        defItem.textContent = definition;
+        defItem.dataset.matched = 'false';
+        defsList.appendChild(defItem);
+    });
+
+    score = 0;
+    attempts = 0;
+    matchedPairs = 0;
+    scoreDisplay.textContent = `Score: ${score}`;
+    attemptsDisplay.textContent = `Attempts: ${attempts}`;
+    feedback.textContent = '';
+    playAgainButton.style.display = 'none'; // إخفاء زر إعادة اللعب
+}
+
+// وظيفة لمطابقة الكلمات مع التعريفات
+function matchWordDefinition(word, definition) {
+    const wordText = word.textContent;
+    const defText = definition.textContent;
+
+    // نبحث عن المطابقة الصحيحة بين الكلمة والتعريف
+    const selectedPair = words.find(pair => pair.text === wordText && pair.definition === defText);
+
+    if (selectedPair) {
+        word.classList.add('correct');
+        definition.classList.add('correct');
+        word.dataset.matched = 'true';
+        definition.dataset.matched = 'true';
+        score++;
+        matchedPairs++;
+
+        feedback.textContent = 'Correct! Keep going!';
+        scoreDisplay.textContent = `Score: ${score}`;
+    } else {
+        attempts++;
+        attemptsDisplay.textContent = `Attempts: ${attempts}`;
+        word.classList.add('incorrect');
+        definition.classList.add('incorrect');
+        feedback.textContent = 'Incorrect! Try again!';
+        setTimeout(() => {
+            word.classList.remove('incorrect');
+            definition.classList.remove('incorrect');
+        }, 500);
+    }
+
+    // تحقق من تطابق جميع الأزواج
+    if (matchedPairs === 4) {
+        feedback.textContent = 'Congratulations! You have matched all pairs!';
+        playAgainButton.style.display = 'inline-block'; // إظهار زر إعادة اللعب
+    }
+
+    // تحقق من تجاوز عدد المحاولات
+    if (attempts >= 6) {
+        feedback.textContent = 'Game Over! Too many incorrect attempts.';
+        playAgainButton.style.display = 'inline-block'; // إظهار زر إعادة اللعب
+    }
+
+    selectedWord = null;
+}
+
+    // Event listener for word selection
+    wordsList.addEventListener('click', function(event) {
+        if (event.target.classList.contains('item') && !event.target.classList.contains('correct') && !event.target.classList.contains('incorrect')) {
+            if (selectedWord) {
+                matchWordDefinition(selectedWord, event.target);
+            } else {
+                selectedWord = event.target;
+                selectedWord.classList.add('selected');
+            }
+        }
+    });
+
+    // Event listener for definition selection
+    defsList.addEventListener('click', function(event) {
+        if (event.target.classList.contains('item') && !event.target.classList.contains('correct') && !event.target.classList.contains('incorrect') && selectedWord) {
+            matchWordDefinition(selectedWord, event.target);
+        }
+    });
+
+    // "Play Again" button event listener
+    playAgainButton.addEventListener('click', function() {
+        createLists(); // Rebuild word and definition lists
+    });
+
+    // Initialize the game
+    createLists();
+    
+</script>
+
+</body>
+</html>
